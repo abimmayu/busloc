@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct YourTab: View {
+struct SearchView: View {
     @State private var searchText = ""
     
     let items: [String] = ["The Breeze", "Aeon", "Intermoda", "Foresta", "ICE BSD", "SML Plaza", "Greenwich"]
@@ -72,7 +72,7 @@ struct RouteView: View {
 }
 
 #Preview {
-    YourTab()
+    SearchView()
 }
 
 // Data Structures

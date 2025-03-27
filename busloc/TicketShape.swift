@@ -75,7 +75,7 @@ struct TicketMask: View {
     }
 }
 
-struct Bus {
+struct Bus: Hashable {
     let name: String
     let route: [String]
     let etaStart: String
