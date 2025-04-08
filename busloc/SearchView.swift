@@ -1,133 +1,134 @@
 import SwiftUI
 
 struct SearchView: View {
-    @State private var searchText = ""
+    @State private var startStop: String = ""
+    @State private var endStop: String = ""
+    @State private var isSelectingStart = false
+    @State private var isSelectingEnd = false
+    @State private var searchResult: Bus?
 
-    let items: [String] = ["The Breeze", "Aeon", "Intermoda", "Foresta", "ICE BSD", "SML Plaza", "Greenwich"]
-    
-    let routes: [String: Rute] = RouteData.allRoutes()
-    
-    var filteredItems: [String] {
-        if searchText.isEmpty {
-            return items
-        } else {
-            return items.filter { $0.lowercased().contains(searchText.lowercased()) }
-        }
+    let items: [Bus] = busData
+    var allStops: [String] {
+        Set(items.flatMap { $0.route }).sorted()
     }
 
     var body: some View {
         NavigationStack {
-            VStack {
-                // Search bar
-                TextField("Search Route...", text: $searchText)
-                    .padding()
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
+            VStack(alignment: .leading, spacing: 20) {
 
-                ScrollView {
-                    VStack {
-                        ForEach(filteredItems, id: \.self) { item in
-                            if let route = routes[item] {
-                                RouteView(route: route)
-                            } else {
-                                Text("\(item) - No route available")
-                                    .foregroundColor(.gray)
+                VStack(alignment: .leading) {
+                    NavigationLink(destination: StopPickerView(selectedStop: $startStop, allStops: allStops), isActive: $isSelectingStart) {
+                        HStack {
+                            Text(startStop.isEmpty ? "Select starting stop" : startStop)
+                                .foregroundColor(startStop.isEmpty ? .gray : .primary)
+                            Spacer()
+                            Image(systemName: "magnifyingglass")
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                    }
+                }
+
+                VStack(alignment: .leading) {
+                    NavigationLink(destination: StopPickerView(selectedStop: $endStop, allStops: allStops), isActive: $isSelectingEnd) {
+                        HStack {
+                            Text(endStop.isEmpty ? "Select destination stop" : endStop)
+                                .foregroundColor(endStop.isEmpty ? .gray : .primary)
+                            Spacer()
+                            Image(systemName: "magnifyingglass")
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                        .padding(.horizontal)
+                    }
+                }
+
+                Button("Find Best Route") {
+                    searchResult = findBestRoute(from: startStop, to: endStop)
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.orange)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .padding(.horizontal)
+
+                if let result = searchResult {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Rute Terbaik: \(result.name)")
+                                .font(.title3)
+                                .bold()
+                            Text("Total Halte: \(numberOfStops(in: result, from: startStop, to: endStop))")
+                            
+                            Divider()
+                            ForEach(routeSegment(in: result, from: startStop, to: endStop), id: \.self) { stop in
+                                HStack {
+                                    Circle()
+                                        .fill(Color.orange)
+                                        .frame(width: 8, height: 8)
+                                    Text(stop)
+                                }
                             }
                         }
+                        .padding()
                     }
-                }
-                Spacer()
-            }
-            .navigationTitle("Search Routes")
-        }
-    }
-}
-
-struct RouteView: View {
-    var route: Rute
-
-    var body: some View {
-        VStack(alignment: .leading) {
-            DisclosureGroup {
-                ForEach(route.haltelist, id: \.name) { halte in
-                    HStack {
-                        Circle()
-                            .fill(Color.orange)
-                            .frame(width: 8, height: 8)
-                            .padding(.leading, 32)
-                        Text(halte.name)
-                        Spacer()
-                        Text("\(halte.eta) min")
+                } else if !startStop.isEmpty && !endStop.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .resizable()
+                            .frame(width: 80, height: 80)
+                            .foregroundColor(.orange)
+                            .padding(.top, 30)
+                        Text("Sorry, route is unavailable")
+                            .font(.title3)
                             .foregroundColor(.gray)
                     }
+                    .frame(maxWidth: .infinity)
                 }
-            } label: {
-                HStack {
-                    Image(systemName: "bus")
-                        .foregroundColor(.orange)
-                    Text(route.name)
-                        .font(.headline)
-                }
+
+                Spacer()
             }
-            .padding()
+            .navigationTitle("Find Best Route")
         }
     }
-}
 
-struct Halte: Identifiable {
-    let id = UUID()
-    let name: String
-    let eta: Int
-    let latitude: Double
-    let longitude: Double
-}
+    func findBestRoute(from start: String, to end: String) -> Bus? {
+        let candidates = items.compactMap { bus -> (Bus, Int)? in
+            guard let startIndex = bus.route.firstIndex(of: start),
+                  let endIndex = bus.route.firstIndex(of: end),
+                  startIndex < endIndex else {
+                return nil
+            }
+            let count = endIndex - startIndex
+            return (bus, count)
+        }
 
-struct Rute {
-    let name: String
-    let haltelist: [Halte]
-}
+        return candidates.min(by: { $0.1 < $1.1 })?.0
+    }
 
-final class RouteData {
-    static func allRoutes() -> [String: Rute] {
-        return [
-            "The Breeze": Rute(name: "The Breeze", haltelist: [
-                Halte(name: "Halte 1", eta: 10, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 2", eta: 15, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 3", eta: 20, latitude: 48.856614, longitude: 2.352222)
-            ]),
-            "Aeon": Rute(name: "Aeon", haltelist: [
-                Halte(name: "Halte 1", eta: 10, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 2", eta: 15, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 3", eta: 20, latitude: 48.856614, longitude: 2.352222)
-            ]),
-            "Intermoda": Rute(name: "Intermoda", haltelist: [
-                Halte(name: "Halte 1", eta: 10, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 2", eta: 15, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 3", eta: 20, latitude: 48.856614, longitude: 2.352222)
-            ]),
-            "Foresta": Rute(name: "Foresta", haltelist: [
-                Halte(name: "Halte 1", eta: 10, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 2", eta: 15, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 3", eta: 20, latitude: 48.856614, longitude: 2.352222)
-            ]),
-            "ICE BSD": Rute(name: "ICE BSD", haltelist: [
-                Halte(name: "Halte 1", eta: 10, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 2", eta: 15, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 3", eta: 20, latitude: 48.856614, longitude: 2.352222)
-            ]),
-            "SML Plaza": Rute(name: "SML Plaza", haltelist: [
-                Halte(name: "Halte 1", eta: 10, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 2", eta: 15, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 3", eta: 20, latitude: 48.856614, longitude: 2.352222)
-            ]),
-            "Greenwich": Rute(name: "Greenwich", haltelist: [
-                Halte(name: "Halte 1", eta: 10, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 2", eta: 15, latitude: 48.856614, longitude: 2.352222),
-                Halte(name: "Halte 3", eta: 20, latitude: 48.856614, longitude: 2.352222)
-            ])
-        ]
+    func numberOfStops(in bus: Bus, from start: String, to end: String) -> Int {
+        guard let startIndex = bus.route.firstIndex(of: start),
+              let endIndex = bus.route.firstIndex(of: end) else {
+            return 0
+        }
+        return abs(endIndex - startIndex) + 1
+    }
+
+    func routeSegment(in bus: Bus, from start: String, to end: String) -> [String] {
+        guard let startIndex = bus.route.firstIndex(of: start),
+              let endIndex = bus.route.firstIndex(of: end),
+              startIndex < endIndex else {
+            return []
+        }
+        return Array(bus.route[startIndex...endIndex])
     }
 }
+
+
 
 #Preview {
     SearchView()
