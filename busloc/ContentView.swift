@@ -8,26 +8,7 @@ struct ContentView: View {
     var body: some View {
         HStack {
             NavigationStack {
-                List {
-                    ForEach(items) { item in
-                        HStack {
-                            TicketMask(bus: BusData.getData()[0])
-                        }
-                        .frame(maxHeight: 120)
-                    }
-                    .onDelete(perform: deleteItems)
-                    
-                }
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        EditButton()
-                    }
-                    ToolbarItem {
-                        Button(action: addItem) {
-                            Label("Add Item", systemImage: "plus")
-                        }
-                    }
-                }
+                HomeView()
             }
         }
     }
