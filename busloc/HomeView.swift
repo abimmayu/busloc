@@ -10,6 +10,8 @@ import SwiftUI
 let busData: [Bus] = BusData.getData()
 
 struct HomeView: View {
+    @State private var selectedBus: Int = 0;
+    @State private var isNavigating = false
     var body: some View {
         VStack(alignment: .center, spacing: 0) {
             Rectangle()
@@ -60,15 +62,30 @@ struct HomeView: View {
                 .padding()
                 .padding(.bottom, 10)
             }
-            VStack {
-                ForEach(busData, id: \.self) { bus in
-                    TicketMask(bus: bus)
+            ScrollView {
+                VStack {
+                    ForEach(Array(busData.enumerated()), id: \.element) { index, bus in
+                        TicketMask(bus: bus, onClick: {
+                            selectedBus = index+1
+                            isNavigating = true
+                        }
+                            
+                        )
+                    }
                 }
             }
             Spacer()
         }
         .background(Color.white)
         .edgesIgnoringSafeArea(.top)
+        .background(
+                    NavigationLink(
+                        destination: BusStopList(rute: selectedBus),
+                        isActive: $isNavigating,
+                        label: { EmptyView() }
+                    )
+                    .hidden()
+                )
     }
 }
 

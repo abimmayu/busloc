@@ -55,7 +55,7 @@ struct BusStopList: View {
                 "ICE Business Park", "ICE 6", "ICE 5", "CBD Barat 1", "CBD Barat 2", "Lobby AEON", "AEON Mall 2",
                 "CBD Timur 2", "Nava Park 1", "Greencove", "The Breeze"
             ]
-        case 7:
+        case 6:
             return [
                 "Intermoda", "Simplicity 2", "Edutown 1", "Edutown 2", "ICE 1", "ICE 2", "ICE Business Park", "ICE 6", "ICE 5",
                 "EPICON", "Gramedia", "Astra", "Courts Mega Store", "Q BIG 1", "Lulu", "Q Big 2", "Q Big 3", "BCA", "FBL 2",
@@ -95,5 +95,5 @@ struct BusStopList: View {
             }
         }
 #Preview {
-    ContentView()
+    BusStopList(rute: 1)
 }

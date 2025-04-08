@@ -3,15 +3,16 @@ import SwiftUI
 struct SearchView: View {
     @State private var searchText = ""
 
-    let items: [String] = ["The Breeze", "Aeon", "Intermoda", "Foresta", "ICE BSD", "SML Plaza", "Greenwich"]
+    let items: [Bus] = busData
     
-    let routes: [String: Rute] = RouteData.allRoutes()
-    
-    var filteredItems: [String] {
+    var filteredItems: [Bus?] {
         if searchText.isEmpty {
             return items
         } else {
-            return items.filter { $0.lowercased().contains(searchText.lowercased()) }
+            return items.filter {
+                let routesList = $0.route
+                return routesList.contains(where: { $0.lowercased().contains(searchText.lowercased()) })
+            }
         }
     }
 
@@ -27,10 +28,10 @@ struct SearchView: View {
                 ScrollView {
                     VStack {
                         ForEach(filteredItems, id: \.self) { item in
-                            if let route = routes[item] {
-                                RouteView(route: route)
+                            if let route = item {
+                                RouteView(bus: route, filteredString: searchText)
                             } else {
-                                Text("\(item) - No route available")
+                                Text("\(item!) - No route available")
                                     .foregroundColor(.gray)
                             }
                         }
@@ -44,28 +45,32 @@ struct SearchView: View {
 }
 
 struct RouteView: View {
-    var route: Rute
+    var bus: Bus
+    var filteredString: String?
 
     var body: some View {
         VStack(alignment: .leading) {
             DisclosureGroup {
-                ForEach(route.haltelist, id: \.name) { halte in
+                ForEach(bus.route, id: \.self) { route in
                     HStack {
                         Circle()
                             .fill(Color.orange)
                             .frame(width: 8, height: 8)
                             .padding(.leading, 32)
-                        Text(halte.name)
+                        Text(route)
+                            .font(.body)
+                            .fontWeight(route.lowercased().contains(filteredString?.lowercased() ?? "") ? .bold : .regular) // Bold jika cocok
+                            .foregroundColor(route.lowercased().contains(filteredString?.lowercased() ?? "") ? .orange : .primary)
                         Spacer()
-                        Text("\(halte.eta) min")
-                            .foregroundColor(.gray)
+//                        Text("\(halte.eta) min")
+//                            .foregroundColor(.gray)
                     }
                 }
             } label: {
                 HStack {
                     Image(systemName: "bus")
                         .foregroundColor(.orange)
-                    Text(route.name)
+                    Text(bus.name)
                         .font(.headline)
                 }
             }
