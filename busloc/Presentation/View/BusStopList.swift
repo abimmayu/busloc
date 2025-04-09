@@ -31,6 +31,7 @@ struct BusStopList: View {
             .padding(.leading, 50)
             .padding(.bottom, 20)
         }
+        .background(Color.white)
         .navigationTitle("Rute \(bus.name)")
         .navigationBarTitleDisplayMode(.inline)
             }

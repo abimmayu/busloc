@@ -16,7 +16,11 @@ struct SearchView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
-
+                Text("Find Best Route")
+                    .foregroundColor(Color.black)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    
                 // Starting Stop Picker
                 VStack(alignment: .leading) {
                     NavigationLink(destination: StopPickerView(selectedStop: $startStop, allStops: allStops), isActive: $isSelectingStart) {
@@ -27,9 +31,9 @@ struct SearchView: View {
                             Image(systemName: "magnifyingglass")
                         }
                         .padding()
-                        .background(Color(.systemGray6))
+                        .background(Color(.gray.withAlphaComponent(0.1)))
                         .cornerRadius(8)
-                        .padding(.horizontal)
+//                        .padding(.horizontal)
                     }
                 }
 
@@ -43,9 +47,8 @@ struct SearchView: View {
                             Image(systemName: "magnifyingglass")
                         }
                         .padding()
-                        .background(Color(.systemGray6))
+                        .background(Color(.gray.withAlphaComponent(0.1)))
                         .cornerRadius(8)
-                        .padding(.horizontal)
                     }
                 }
 
@@ -59,7 +62,6 @@ struct SearchView: View {
                 .background(Color.orange)
                 .foregroundColor(.white)
                 .cornerRadius(10)
-                .padding(.horizontal)
 
                 // Result Section
                 if !searchResults.isEmpty {
@@ -190,7 +192,8 @@ struct SearchView: View {
 
                 Spacer()
             }
-            .navigationTitle("Find Best Route")
+            .padding(.horizontal)
+            .background(Color.white)
         }
     }
 

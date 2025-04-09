@@ -35,7 +35,7 @@ struct StopPickerView: View {
             }
             .padding(.horizontal)
             .padding(.vertical, 6)
-            .background(Color(.systemGray6))
+            .background(.gray.opacity(0.2))
             .cornerRadius(10)
             .padding()
 
@@ -46,11 +46,17 @@ struct StopPickerView: View {
                         dismiss()
                     }) {
                         Text(stop)
+                            .foregroundColor(.black)
                     }
                 }
+                .listRowBackground(Color.white)
+                .listRowSeparatorTint(.white)
             }
+            .background(.white)
+            .scrollContentBackground(.hidden)
             .listStyle(.plain)
         }
+        .background(.white)
         .navigationTitle("Select Stop")
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -59,6 +65,7 @@ struct StopPickerView: View {
         }
     }
 }
+
 #Preview {
     StopPickerView(selectedStop: .constant(""), allStops: ["1", "2", "3"])
 }

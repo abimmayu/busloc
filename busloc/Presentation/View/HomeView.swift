@@ -86,21 +86,19 @@ struct HomeView: View {
                 }
                 .tag(1)
             
-            Button(action: {
-                showMapView.toggle()
-            }) {
-                MapViewControllerWrapper()
-            }
+            MapViewControllerWrapper()
+                    .background(Color.white)
             .tabItem {
                 Label("Map", systemImage: "map.fill")
             }
             .tag(2)
         }
         .background(Color.white)
-        .navigationBarTitle(selectedTab == 0 ? Text("") : selectedTab == 1 ? Text("Search The Route") : Text("Search Nearest Bus-Stop"), displayMode: .inline)
-        .fullScreenCover(isPresented: $showMapView) {
-            MapViewControllerWrapper()
-        }
+        .navigationBarTitle(
+            selectedTab == 0 ? Text("") :
+                selectedTab == 1 ? Text("Search The Route") :
+                Text("Search Nearest Bus-Stop"), displayMode: .inline
+        )
     }
 }
 
