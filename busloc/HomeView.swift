@@ -4,89 +4,104 @@
 //
 //  Created by Aqua on 27/03/25.
 //
-
 import SwiftUI
+import UIKit
 
 let busData: [Bus] = BusData.getData()
 
 struct HomeView: View {
-    @State private var selectedBus: Int = 0;
+    @State private var selectedBus: Int = 0
     @State private var isNavigating = false
+    @State private var selectedTab: Int = 0
+    @State private var showMapView = false
+    
+    init() {
+        UITabBar.appearance().backgroundColor = UIColor.white
+    }
+    
     var body: some View {
-        VStack(alignment: .center, spacing: 0) {
-            Rectangle()
-                .fill(Color.orange)
-                .frame(height: 50)
-            ZStack {
-                HalfCircle()
+        TabView(selection: $selectedTab) {
+            VStack(alignment: .center, spacing: 0) {
+                Rectangle()
                     .fill(Color.orange)
-                    .frame(height: 180)
-                    .overlay(
-                        Text("Start your journey!")
-                            .font(.title2)
-                            .bold()
-                            .foregroundColor(.white)
-                    )
-                Circle()
-                    .stroke(Color.orange, lineWidth: 8)
-                    .background(Circle().fill(Color.white))
-                    .frame(width: 200, height: 130)
-                    .overlay(
-                        Image("Kucing")
-                            .resizable()
-                            .scaledToFit()
-                            .clipShape(Circle())
-                            .padding(10)
-                    )
-                    .offset(y: 90)
-            }
-            .padding(.bottom, 75)
-            NavigationLink(destination: SearchView()) {
-                HStack {
-                    TextField("Destination", text: .constant(""))
-                        .padding(.trailing,120)
-                    Button(action: {}) {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.orange)
-                            .clipShape(Circle())
-                        
-                    }
-                    .frame(maxWidth: 50, maxHeight: 50)
-                }
-                .frame(width: 300, height: 50)
-                .background(Color.gray.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 25))
-                .shadow(radius: 1)
-                .padding()
-                .padding(.bottom, 10)
-            }
-            ScrollView {
-                VStack {
-                    ForEach(Array(busData.enumerated()), id: \.element) { index, bus in
-                        TicketMask(bus: bus, onClick: {
-                            selectedBus = index+1
-                            isNavigating = true
-                        }
-                            
+                    .frame(height: 50)
+                ZStack {
+                    HalfCircle()
+                        .fill(Color.orange)
+                        .frame(height: 180)
+                        .overlay(
+                            Text("Start your journey!")
+                                .font(.title2)
+                                .bold()
+                                .foregroundColor(.white)
                         )
+                    Circle()
+                        .stroke(Color.orange, lineWidth: 8)
+                        .background(Circle().fill(Color.white))
+                        .frame(width: 200, height: 130)
+                        .overlay(
+                            Image("Kucing")
+                                .resizable()
+                                .scaledToFit()
+                                .clipShape(Circle())
+                                .padding(10)
+                        )
+                        .offset(y: 90)
+                }
+                .padding(.bottom, 75)
+                
+                ScrollView {
+                    VStack {
+                        ForEach(Array(busData.enumerated()), id: \.element) { index, bus in
+                            TicketMask(bus: bus, onClick: {
+                                selectedBus = index + 1
+                                isNavigating = true
+                            })
+                        }
                     }
                 }
+                Spacer()
             }
-            Spacer()
+            .background(Color.white)
+            .edgesIgnoringSafeArea(.top)
+            .background(
+                NavigationLink(destination: BusStopList(rute: selectedBus), isActive: $isNavigating) { EmptyView() }.hidden()
+            )
+            .tabItem {
+                Label("Home", systemImage: "house.fill")
+            }
+            .tag(0)
+            
+            SearchView()
+                .tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
+                }
+                .tag(1)
+            
+            Button(action: {
+                showMapView.toggle()
+            }) {
+                MapViewControllerWrapper()
+            }
+            .tabItem {
+                Label("Map", systemImage: "map.fill")
+            }
+            .tag(2)
         }
         .background(Color.white)
-        .edgesIgnoringSafeArea(.top)
-        .background(
-                    NavigationLink(
-                        destination: BusStopList(rute: selectedBus),
-                        isActive: $isNavigating,
-                        label: { EmptyView() }
-                    )
-                    .hidden()
-                )
+        .navigationBarTitle("Home", displayMode: .inline)
+        .fullScreenCover(isPresented: $showMapView) {
+            MapViewControllerWrapper()
+        }
     }
+}
+
+struct MapViewControllerWrapper: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        return MapViewController()
+    }
+    
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
 
 struct HalfCircle: Shape {
@@ -103,7 +118,6 @@ struct HalfCircle: Shape {
     }
 }
 
-
 #Preview {
-    HomeView()
+    ContentView()
 }

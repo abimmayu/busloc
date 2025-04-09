@@ -6,11 +6,7 @@ struct ContentView: View {
     @Query private var items: [Item]
 
     var body: some View {
-        HStack {
-            NavigationStack {
-                HomeView()
-            }
-        }
+        HomeView()
     }
 
     private func addItem() {
