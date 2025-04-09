@@ -12,6 +12,7 @@ struct StopPickerView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
+    @FocusState private var isSearchFocused: Bool
 
     var filteredStops: [String] {
         if searchText.isEmpty {
@@ -22,18 +23,43 @@ struct StopPickerView: View {
     }
 
     var body: some View {
-        List {
-            ForEach(filteredStops, id: \.self) { stop in
-                Button(action: {
-                    selectedStop = stop
-                    dismiss()
-                }) {
-                    Text(stop)
+        VStack(spacing: 0) {
+            // Custom Search Bar
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                TextField("Search stop...", text: $searchText)
+                    .focused($isSearchFocused)
+                    .textFieldStyle(PlainTextFieldStyle())
+                    .padding(8)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .background(Color(.systemGray6))
+            .cornerRadius(10)
+            .padding()
+
+            List {
+                ForEach(filteredStops, id: \.self) { stop in
+                    Button(action: {
+                        selectedStop = stop
+                        dismiss()
+                    }) {
+                        Text(stop)
+                    }
                 }
             }
+            .listStyle(.plain)
         }
-        .searchable(text: $searchText, prompt: "Cari halte...")
-        .navigationTitle("Pilih Halte")
+        .navigationTitle("Select Stop")
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                isSearchFocused = true
+            }
+        }
     }
+}
+#Preview {
+    StopPickerView(selectedStop: .constant(""), allStops: ["1", "2", "3"])
 }
 

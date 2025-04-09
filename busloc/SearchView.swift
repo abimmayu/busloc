@@ -5,7 +5,8 @@ struct SearchView: View {
     @State private var endStop: String = ""
     @State private var isSelectingStart = false
     @State private var isSelectingEnd = false
-    @State private var searchResult: Bus?
+    @State private var searchResults: [(bus: Bus, count: Int)] = []
+    @State private var expandedBusNames: Set<String> = []
 
     let items: [Bus] = busData
     var allStops: [String] {
@@ -16,6 +17,7 @@ struct SearchView: View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
 
+                // Starting Stop Picker
                 VStack(alignment: .leading) {
                     NavigationLink(destination: StopPickerView(selectedStop: $startStop, allStops: allStops), isActive: $isSelectingStart) {
                         HStack {
@@ -31,6 +33,7 @@ struct SearchView: View {
                     }
                 }
 
+                // Destination Stop Picker
                 VStack(alignment: .leading) {
                     NavigationLink(destination: StopPickerView(selectedStop: $endStop, allStops: allStops), isActive: $isSelectingEnd) {
                         HStack {
@@ -46,8 +49,10 @@ struct SearchView: View {
                     }
                 }
 
+                // Search Button
                 Button("Find Best Route") {
-                    searchResult = findBestRoute(from: startStop, to: endStop)
+                    searchResults = findAllValidRoutes(from: startStop, to: endStop)
+                    expandedBusNames.removeAll()
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
@@ -56,25 +61,118 @@ struct SearchView: View {
                 .cornerRadius(10)
                 .padding(.horizontal)
 
-                if let result = searchResult {
+                // Result Section
+                if !searchResults.isEmpty {
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Rute Terbaik: \(result.name)")
-                                .font(.title3)
-                                .bold()
-                            Text("Total Halte: \(numberOfStops(in: result, from: startStop, to: endStop))")
-                            
-                            Divider()
-                            ForEach(routeSegment(in: result, from: startStop, to: endStop), id: \.self) { stop in
-                                HStack {
-                                    Circle()
-                                        .fill(Color.orange)
-                                        .frame(width: 8, height: 8)
-                                    Text(stop)
+                        VStack(alignment: .leading, spacing: 20) {
+
+                            if let best = searchResults.first {
+                                VStack(alignment: .leading, spacing: 16) {
+                                    Text("Best Route")
+                                        .font(.title3)
+                                        .bold()
+                                        .padding(.bottom, 4)
+                                        .padding(.horizontal)
+
+                                    VStack(alignment: .leading, spacing: 12) {
+                                        HStack(spacing: 12) {
+                                            Image(systemName: "star.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 28, height: 28)
+                                                .foregroundColor(.orange)
+
+                                            VStack(alignment: .leading) {
+                                                Text(best.bus.name)
+                                                    .font(.headline)
+                                                Text("Total Stops: \(best.count + 1)")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
+                                            }
+                                        }
+
+                                        Divider()
+
+                                        DisclosureGroup("Show Route Stops") {
+                                            VStack(alignment: .leading, spacing: 8) {
+                                                ForEach(routeSegment(in: best.bus, from: startStop, to: endStop), id: \.self) { stop in
+                                                    HStack(spacing: 8) {
+                                                        Image(systemName: "circle.fill")
+                                                            .resizable()
+                                                            .frame(width: 8, height: 8)
+                                                            .foregroundColor(.orange)
+                                                        Text(stop)
+                                                            .font(.subheadline)
+                                                    }
+                                                }
+                                            }
+                                            .padding(.top, 4)
+                                        }
+                                        .font(.subheadline)
+                                    }
+                                    .padding()
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(12)
+                                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                                    .padding(.horizontal)
                                 }
                             }
+
+                            // Other Routes
+                            if searchResults.count > 1 {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text("Other Available Routes")
+                                        .font(.headline)
+                                        .padding(.top)
+
+                                    ForEach(searchResults.dropFirst(), id: \.bus.name) { result in
+                                        DisclosureGroup(
+                                            isExpanded: Binding(
+                                                get: { expandedBusNames.contains(result.bus.name) },
+                                                set: { isExpanded in
+                                                    if isExpanded {
+                                                        expandedBusNames.insert(result.bus.name)
+                                                    } else {
+                                                        expandedBusNames.remove(result.bus.name)
+                                                    }
+                                                }
+                                            ),
+                                            content: {
+                                                VStack(alignment: .leading) {
+                                                    ForEach(routeSegment(in: result.bus, from: startStop, to: endStop), id: \.self) { stop in
+                                                        HStack {
+                                                            Circle()
+                                                                .fill(Color.gray.opacity(0.5))
+                                                                .frame(width: 6, height: 6)
+                                                            Text(stop)
+                                                                .font(.caption)
+                                                        }
+                                                    }
+                                                }
+                                                .padding(.top, 5)
+                                            },
+                                            label: {
+                                                VStack(alignment: .leading) {
+                                                    HStack {
+                                                        Image(systemName: "bus.fill")
+                                                        Text(result.bus.name)
+                                                            .font(.subheadline)
+                                                            .bold()
+                                                    }
+                                                    Text("Total Stops: \(result.count + 1)")
+                                                        .font(.caption)
+                                                        .foregroundColor(.gray)
+                                                }
+                                            }
+                                        )
+                                        .padding()
+                                        .background(Color(.systemGray6))
+                                        .cornerRadius(10)
+                                    }
+                                }
+                                .padding()
+                            }
                         }
-                        .padding()
                     }
                 } else if !startStop.isEmpty && !endStop.isEmpty {
                     VStack(spacing: 16) {
@@ -96,39 +194,61 @@ struct SearchView: View {
         }
     }
 
-    func findBestRoute(from start: String, to end: String) -> Bus? {
-        let candidates = items.compactMap { bus -> (Bus, Int)? in
-            guard let startIndex = bus.route.firstIndex(of: start),
-                  let endIndex = bus.route.firstIndex(of: end),
-                  startIndex < endIndex else {
-                return nil
-            }
-            let count = endIndex - startIndex
-            return (bus, count)
-        }
+    func findAllValidRoutes(from start: String, to end: String) -> [(bus: Bus, count: Int)] {
+          // 1. Cari rute normal dari start ke end (urutan maju)
+          let directRoutes = items.compactMap { bus -> (Bus, Int)? in
+              guard let startIndex = bus.route.firstIndex(of: start),
+                    let endIndex = bus.route.firstIndex(of: end),
+                    startIndex < endIndex else {
+                  return nil
+              }
+              let count = endIndex - startIndex
+              return (bus, count)
+          }
 
-        return candidates.min(by: { $0.1 < $1.1 })?.0
-    }
+          if !directRoutes.isEmpty {
+              return directRoutes.sorted(by: { $0.1 < $1.1 })
+          }
 
-    func numberOfStops(in bus: Bus, from start: String, to end: String) -> Int {
-        guard let startIndex = bus.route.firstIndex(of: start),
-              let endIndex = bus.route.firstIndex(of: end) else {
-            return 0
-        }
-        return abs(endIndex - startIndex) + 1
-    }
+          // 2. Kalau tidak ada rute maju, cari yang bisa looping (muter ke awal lagi)
+          let loopingRoutes = items.compactMap { bus -> (Bus, Int)? in
+              guard let startIndex = bus.route.firstIndex(of: start),
+                    let endIndex = bus.route.firstIndex(of: end) else {
+                  return nil
+              }
 
-    func routeSegment(in bus: Bus, from start: String, to end: String) -> [String] {
-        guard let startIndex = bus.route.firstIndex(of: start),
-              let endIndex = bus.route.firstIndex(of: end),
-              startIndex < endIndex else {
-            return []
-        }
-        return Array(bus.route[startIndex...endIndex])
-    }
+              if endIndex < startIndex {
+                  let count = (bus.route.count - startIndex) + endIndex
+                  return (bus, count)
+              }
+
+              return nil
+          }
+
+          return loopingRoutes.sorted(by: { $0.1 < $1.1 })
+      }
+
+      func routeSegment(in bus: Bus, from start: String, to end: String) -> [String] {
+          guard let startIndex = bus.route.firstIndex(of: start),
+                let endIndex = bus.route.firstIndex(of: end) else {
+              return []
+          }
+
+          if start == end {
+              return [start]
+          }
+
+          if startIndex < endIndex {
+              // Rute maju normal
+              return Array(bus.route[startIndex...endIndex])
+          } else {
+              // Rute looping dari akhir ke awal
+              let toEnd = bus.route[startIndex..<bus.route.count]
+              let fromStart = bus.route[0...endIndex]
+              return Array(toEnd + fromStart)
+          }
+      }
 }
-
-
 
 #Preview {
     SearchView()
