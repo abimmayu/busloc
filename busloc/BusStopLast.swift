@@ -13,7 +13,6 @@ struct BusStopLast: View {
     var body: some View {
         HStack(alignment: .top) {
             ZStack(alignment: .top) {
-                // Tidak ada rectangle karena ini stop terakhir
                 Circle()
                     .frame(width: 12, height: 12)
                     .foregroundColor(.orange)

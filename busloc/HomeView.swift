@@ -48,28 +48,16 @@ struct HomeView: View {
                         )
                         .offset(y: 90)
                 }
-                .frame(width: 300, height: 50)
-                .background(Color.gray.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 25))
-                .shadow(radius: 1)
-                .padding()
-                .padding(.bottom, 10)
-            }
-            Divider()
-                .padding(.bottom, 20)
-            Text("All Buses:")
-                .font(.headline)
-                .padding(.leading, -145)
-                .padding(.bottom, 20)
-                .foregroundColor(.gray)
-            ScrollView {
-                VStack {
-                    ForEach(Array(busData.enumerated()), id: \.element) { index, bus in
-                        TicketMask(bus: bus, onClick: {
-                            selectedBus = index+1
-                            isNavigating = true
-                .padding(.bottom, 75)
+                .padding(.bottom, 100)
                 
+                Divider()
+                    .padding(.bottom, 20)
+                Text("All Buses:")
+                    .font(.headline)
+                    .padding(.leading, -145)
+                    .padding(.bottom, 20)
+                    .foregroundColor(.gray)
+                    
                 ScrollView {
                     VStack {
                         ForEach(Array(busData.enumerated()), id: \.element) { index, bus in
@@ -78,9 +66,9 @@ struct HomeView: View {
                                 isNavigating = true
                             })
                         }
+                        Spacer()
                     }
                 }
-                Spacer()
             }
             .background(Color.white)
             .edgesIgnoringSafeArea(.top)
@@ -109,7 +97,7 @@ struct HomeView: View {
             .tag(2)
         }
         .background(Color.white)
-        .navigationBarTitle("Home", displayMode: .inline)
+        .navigationBarTitle(selectedTab == 0 ? Text("") : selectedTab == 1 ? Text("Search The Route") : Text("Search Nearest Bus-Stop"), displayMode: .inline)
         .fullScreenCover(isPresented: $showMapView) {
             MapViewControllerWrapper()
         }
