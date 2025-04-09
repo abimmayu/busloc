@@ -28,6 +28,7 @@ class MapViewController: UIViewController, MKMapViewDelegate {
         let initialLocation = CLLocationCoordinate2D(latitude: -6.3015445, longitude: 106.65247)
         let region = MKCoordinateRegion(center: initialLocation, latitudinalMeters: 500, longitudinalMeters: 500)
         mapView.setRegion(region, animated: true)
+        mapView.backgroundColor = .white
     }
     
     private func setupSearchButton() {

@@ -23,6 +23,7 @@ struct BusStopDefault: View {
 
             Text(stopName)
                 .font(.body)
+                .foregroundColor(.black)
                 .padding(.leading, 10)
                 .padding(.top, -4)
         }

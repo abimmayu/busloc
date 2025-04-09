@@ -13,7 +13,6 @@ struct BusStopLast: View {
     var body: some View {
         HStack(alignment: .top) {
             ZStack(alignment: .top) {
-                // Tidak ada rectangle karena ini stop terakhir
                 Circle()
                     .frame(width: 12, height: 12)
                     .foregroundColor(.orange)
@@ -21,6 +20,7 @@ struct BusStopLast: View {
 
             Text(stopName)
                 .font(.body)
+                .foregroundColor(.black)
                 .padding(.leading, 10)
                 .padding(.top, -4)
         }
