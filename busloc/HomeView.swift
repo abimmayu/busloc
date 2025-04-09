@@ -48,6 +48,26 @@ struct HomeView: View {
                         )
                         .offset(y: 90)
                 }
+                .frame(width: 300, height: 50)
+                .background(Color.gray.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 25))
+                .shadow(radius: 1)
+                .padding()
+                .padding(.bottom, 10)
+            }
+            Divider()
+                .padding(.bottom, 20)
+            Text("All Buses:")
+                .font(.headline)
+                .padding(.leading, -145)
+                .padding(.bottom, 20)
+                .foregroundColor(.gray)
+            ScrollView {
+                VStack {
+                    ForEach(Array(busData.enumerated()), id: \.element) { index, bus in
+                        TicketMask(bus: bus, onClick: {
+                            selectedBus = index+1
+                            isNavigating = true
                 .padding(.bottom, 75)
                 
                 ScrollView {
